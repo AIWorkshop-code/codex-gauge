@@ -1,6 +1,8 @@
 node_modules/
 dist/
 release/
+release-local-test/
+release-*/
 artifacts/
 .npm-cache/
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — 2026-07-12
+
+- 使用全新的简约清新应用图标。
+- 增加完整的 macOS ICNS 与 Windows ICO 多尺寸资源。
+- macOS 与 Windows 打包配置改为使用统一品牌图标。
+
 ## 0.5.0 — 2026-07-12
 
 首个公开 Release。

@@ -10,17 +10,17 @@
 - NSIS Windows installer build passed.
 - Design comparison passed in `design-qa.md`.
 
-## Release artifacts — 0.5.0
+## Release artifacts — 0.5.1
 
-- Windows NSIS: `release/Codex-Gauge-Setup-0.5.0.exe`
-  - Size: 195,401,387 bytes
-  - SHA-256: `9227666230CF4CEFA8EEB18D0DE49AA248CC14A1C65652167E2DCE887E8B6776`
-- macOS Apple Silicon DMG: `release/Codex-Gauge-0.5.0-macOS-arm64.dmg`
-  - Size: 232,537,922 bytes
-  - SHA-256: `7EE4C5A162D963BF687DD3457C66D284417825E51F1A7F9AB2275BF3B6DB1710`
-- macOS Apple Silicon ZIP: `release/Codex-Gauge-0.5.0-macOS-arm64.zip`
-  - Size: 224,851,623 bytes
-  - SHA-256: `2410A1FBE773CF7950A3AAC8F3CF295B5DEBBFC3E8E6F075AA51EE07F5392639`
+- Windows NSIS: `release-0.5.1/Codex-Gauge-Setup-0.5.1.exe`
+  - Size: 195,537,684 bytes
+  - SHA-256: `4D79032B5BF9EC0240FB23CE0B5350F7C0E14934C72F2626104E5FE6BF384341`
+- macOS Apple Silicon DMG: `release-0.5.1/Codex-Gauge-0.5.1-macOS-arm64.dmg`
+  - Size: 233,495,464 bytes
+  - SHA-256: `2BE7B6E640A2B9EDA74BB8C791D698DD94032166D8E0D2EB30A1311EBE4BD6EB`
+- macOS Apple Silicon ZIP: `release-0.5.1/Codex-Gauge-0.5.1-macOS-arm64.zip`
+  - Size: 225,192,920 bytes
+  - SHA-256: `63AC82A22425F80FB9FBDF3BD0DFDE3971C85C7B6D95599318ADB7AC7E4D1897`
 
 ## Runtime behavior verified
 
