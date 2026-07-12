@@ -10,17 +10,17 @@
 - NSIS Windows installer build passed.
 - Design comparison passed in `design-qa.md`.
 
-## Release artifacts — 0.5.1
+## Release artifacts — 0.5.2
 
-- Windows NSIS: `release-0.5.1/Codex-Gauge-Setup-0.5.1.exe`
-  - Size: 195,537,684 bytes
-  - SHA-256: `4D79032B5BF9EC0240FB23CE0B5350F7C0E14934C72F2626104E5FE6BF384341`
-- macOS Apple Silicon DMG: `release-0.5.1/Codex-Gauge-0.5.1-macOS-arm64.dmg`
-  - Size: 233,495,464 bytes
-  - SHA-256: `2BE7B6E640A2B9EDA74BB8C791D698DD94032166D8E0D2EB30A1311EBE4BD6EB`
-- macOS Apple Silicon ZIP: `release-0.5.1/Codex-Gauge-0.5.1-macOS-arm64.zip`
-  - Size: 225,192,920 bytes
-  - SHA-256: `63AC82A22425F80FB9FBDF3BD0DFDE3971C85C7B6D95599318ADB7AC7E4D1897`
+- Windows NSIS: `release-0.5.2/Codex-Gauge-Setup-0.5.2.exe`
+  - Size: 195,538,033 bytes
+  - SHA-256: `708A2832CC08417426BAF1C5CD1DB1E8B9C53B06195C088D48640FDEC4392C0B`
+- macOS Apple Silicon DMG: `release-0.5.2/Codex-Gauge-0.5.2-macOS-arm64.dmg`
+  - Size: 233,491,396 bytes
+  - SHA-256: `5C74C218D931665E886E7CF0205F022C50673CB1B51C9C55ADCCA4A5ECFD7EB1`
+- macOS Apple Silicon ZIP: `release-0.5.2/Codex-Gauge-0.5.2-macOS-arm64.zip`
+  - Size: 225,193,248 bytes
+  - SHA-256: `4C74C8C7317D8BB9C9C57843159A02FF39B9901D3F7A87837C5BE42A50E2840C`
 
 ## Runtime behavior verified
 
@@ -35,6 +35,7 @@
 - Converts used percentages to remaining percentages.
 - Displays the primary five-hour quota.
 - Displays the secondary seven-day quota.
+- Supports a persisted square mode that displays only the five-hour quota.
 - Counts down to the selected primary or secondary reset timestamp with explicit day/hour/minute/second units.
 - Does not call an OpenAI API or start a Codex task.
 - Displays `--` when neither live App Server data nor a fresh fallback snapshot is available.

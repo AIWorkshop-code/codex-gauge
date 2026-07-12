@@ -72,10 +72,11 @@ function easeOutCubic(value) {
   return 1 - ((1 - value) ** 3);
 }
 
-function drawWidget(canvas, values, countdown, loading, isDark, animation = {}) {
+function drawWidget(canvas, values, countdown, loading, isDark, primaryOnly, animation = {}) {
   if (!canvas) return;
   const context = canvas.getContext("2d", { alpha: false });
   const emphasis = animation.emphasis || 0;
+  const surfaceWidth = primaryOnly ? BASE_HEIGHT : BASE_WIDTH;
   const palette = isDark ? {
     surfaceStart: "#202628",
     surfaceMid: "#1b2022",
@@ -99,19 +100,19 @@ function drawWidget(canvas, values, countdown, loading, isDark, animation = {}) 
   };
   context.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
   context.clearRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
-  const surface = context.createLinearGradient(0, 0, BASE_WIDTH, BASE_HEIGHT);
+  const surface = context.createLinearGradient(0, 0, surfaceWidth, BASE_HEIGHT);
   surface.addColorStop(0, palette.surfaceStart);
   surface.addColorStop(0.55, palette.surfaceMid);
   surface.addColorStop(1, palette.surfaceEnd);
   context.fillStyle = surface;
-  context.fillRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
+  context.fillRect(0, 0, surfaceWidth, BASE_HEIGHT);
 
   context.save();
   context.globalAlpha = loading ? 0.88 : 1;
   context.shadowColor = palette.shadow;
   context.shadowBlur = 17 + emphasis * 5;
   context.shadowOffsetY = 7 + emphasis * 2;
-  roundedRect(context, 8, 8, 424, 178, 22);
+  roundedRect(context, 8, 8, primaryOnly ? 178 : 424, 178, 22);
   context.fillStyle = surface;
   context.fill();
   context.shadowColor = "transparent";
@@ -119,7 +120,7 @@ function drawWidget(canvas, values, countdown, loading, isDark, animation = {}) 
   context.lineWidth = 1;
   context.stroke();
 
-  const circleX = 116;
+  const circleX = primaryOnly ? 97 : 116;
   const circleY = 97;
   const radius = 68;
   context.lineWidth = 5;
@@ -181,6 +182,11 @@ function drawWidget(canvas, values, countdown, loading, isDark, animation = {}) 
   context.fillText("5H", circleX, 91);
   context.font = '430 28px "Segoe UI Variable", "Segoe UI", sans-serif';
   context.fillText(values.primaryText, circleX, 123);
+
+  if (primaryOnly) {
+    context.restore();
+    return;
+  }
 
   const rightX = 230;
   const rightEdge = 412;
@@ -330,6 +336,7 @@ export function App() {
   const accessibilityLabel = snapshot?.available
     ? `Codex 额度状态，5小时剩余 ${formatPercent(snapshot.primaryRemaining)}，7天剩余 ${formatPercent(snapshot.secondaryRemaining)}，${countdownLabel}额度将在 ${countdown} 后重置`
     : "Codex 额度状态暂时不可用";
+  const primaryOnly = preferences.displayMode === "primary";
   useEffect(() => {
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const from = displayedValuesRef.current;
@@ -348,7 +355,7 @@ export function App() {
       const progress = easeOutCubic(rawProgress);
       const displayed = mixValues(from, values, progress);
       displayedValuesRef.current = displayed;
-      drawWidget(canvasRef.current, displayed, countdown, loading, isDark, {
+      drawWidget(canvasRef.current, displayed, countdown, loading, isDark, primaryOnly, {
         emphasis: hasValueChange ? Math.sin(rawProgress * Math.PI) : 0,
         ambient: isAmbientPulse ? Math.sin(rawProgress * Math.PI) : 0,
         phase: (elapsed % 1100) / 1100,
@@ -364,7 +371,7 @@ export function App() {
     window.cancelAnimationFrame(animationFrameRef.current);
     animationFrameRef.current = window.requestAnimationFrame(render);
     return () => window.cancelAnimationFrame(animationFrameRef.current);
-  }, [values, countdown, loading, isDark, ambientTick]);
+  }, [values, countdown, loading, isDark, ambientTick, primaryOnly]);
 
   const handleContextMenu = (event) => {
     event.preventDefault();
@@ -372,11 +379,11 @@ export function App() {
   };
 
   return (
-    <main className="widget-shell" onContextMenu={handleContextMenu}>
+    <main className={`widget-shell${primaryOnly ? " primary-only" : ""}`} onContextMenu={handleContextMenu}>
       <canvas
         ref={canvasRef}
         className="widget-canvas"
-        width={BASE_WIDTH * RENDER_SCALE}
+        width={(primaryOnly ? BASE_HEIGHT : BASE_WIDTH) * RENDER_SCALE}
         height={BASE_HEIGHT * RENDER_SCALE}
         aria-label={accessibilityLabel}
       />

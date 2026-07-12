@@ -43,6 +43,7 @@ const DEFAULT_PREFERENCES = {
   secondaryNotificationThreshold: 10,
   launchAtLogin: false,
   trayEnabled: true,
+  displayMode: "full",
 };
 
 const legacyUserDataPath = path.join(app.getPath("appData"), "codex-quota-widget");
@@ -69,13 +70,16 @@ function preferencesPath() {
 
 function loadPreferences() {
   let saved = {};
+  try {
+    saved = JSON.parse(fs.readFileSync(preferencesPath(), "utf8"));
+  } catch {
+    // Defaults are used for first launch.
+  }
   if (process.argv.includes("--screenshot") && ["system", "light", "dark"].includes(process.env.CODEX_WIDGET_THEME)) {
     saved.themeSource = process.env.CODEX_WIDGET_THEME;
   }
-  try {
-    saved = { ...saved, ...JSON.parse(fs.readFileSync(preferencesPath(), "utf8")) };
-  } catch {
-    // Defaults are used for first launch.
+  if (process.argv.includes("--screenshot") && ["full", "primary"].includes(process.env.CODEX_WIDGET_DISPLAY_MODE)) {
+    saved.displayMode = process.env.CODEX_WIDGET_DISPLAY_MODE;
   }
   return { ...DEFAULT_PREFERENCES, ...saved };
 }
@@ -96,6 +100,7 @@ function updatePreference(key, value) {
     app.setLoginItemSettings({ openAtLogin: value });
   }
   if (key === "trayEnabled") updateTray();
+  if (key === "displayMode") applyDisplayMode(value);
   mainWindow?.webContents.send("preferences:updated", preferences);
 }
 
@@ -109,6 +114,15 @@ function loadWindowState() {
     const width = Number(state.width);
     const height = Number(state.height);
     if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
+    if (preferences?.displayMode === "primary") {
+      const side = Math.min(291, Math.max(78, Math.round(width)));
+      return {
+        width: side,
+        height: side,
+        x: Number.isFinite(Number(state.x)) ? Math.round(Number(state.x)) : undefined,
+        y: Number.isFinite(Number(state.y)) ? Math.round(Number(state.y)) : undefined,
+      };
+    }
     const normalizedWidth = Math.min(660, Math.max(176, Math.round(width)));
     return {
       width: normalizedWidth,
@@ -140,8 +154,28 @@ function scheduleSaveWindowState() {
 function setPresetSize(width) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const bounds = mainWindow.getBounds();
-  const height = Math.round(width / ASPECT_RATIO);
-  mainWindow.setBounds({ ...bounds, width, height }, true);
+  if (preferences.displayMode === "primary") {
+    const side = Math.round(width / ASPECT_RATIO);
+    mainWindow.setBounds({ ...bounds, width: side, height: side }, true);
+  } else {
+    const height = Math.round(width / ASPECT_RATIO);
+    mainWindow.setBounds({ ...bounds, width, height }, true);
+  }
+  scheduleSaveWindowState();
+}
+
+function applyDisplayMode(mode) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const bounds = mainWindow.getBounds();
+  if (mode === "primary") {
+    const side = Math.min(291, Math.max(78, bounds.height));
+    mainWindow.setAspectRatio(1);
+    mainWindow.setBounds({ ...bounds, width: side, height: side }, true);
+  } else {
+    const height = Math.min(291, Math.max(78, bounds.height));
+    mainWindow.setAspectRatio(ASPECT_RATIO);
+    mainWindow.setBounds({ ...bounds, width: Math.round(height * ASPECT_RATIO), height }, true);
+  }
   scheduleSaveWindowState();
 }
 
@@ -251,8 +285,9 @@ function positionWindow(window) {
 function createWindow() {
   const savedState = loadWindowState();
   const testSize = testWindowSize();
+  const primaryOnly = preferences.displayMode === "primary";
   mainWindow = new BrowserWindow({
-    width: testSize?.width || savedState?.width || 220,
+    width: testSize?.width || savedState?.width || (primaryOnly ? 97 : 220),
     height: testSize?.height || savedState?.height || 97,
     x: savedState?.x,
     y: savedState?.y,
@@ -279,7 +314,7 @@ function createWindow() {
 
   mainWindow.setAlwaysOnTop(true, "floating");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
-  mainWindow.setAspectRatio(ASPECT_RATIO);
+  mainWindow.setAspectRatio(preferences.displayMode === "primary" ? 1 : ASPECT_RATIO);
   if (!savedState || savedState.x === undefined || savedState.y === undefined) {
     positionWindow(mainWindow);
   }
@@ -439,6 +474,23 @@ function openContextMenu() {
         { label: "小（50%）", click: () => setPresetSize(220) },
         { label: "中（75%）", click: () => setPresetSize(330) },
         { label: "大（100%）", click: () => setPresetSize(440) },
+      ],
+    },
+    {
+      label: "显示内容",
+      submenu: [
+        {
+          label: "完整模式",
+          type: "radio",
+          checked: preferences.displayMode === "full",
+          click: () => updatePreference("displayMode", "full"),
+        },
+        {
+          label: "仅显示 5H",
+          type: "radio",
+          checked: preferences.displayMode === "primary",
+          click: () => updatePreference("displayMode", "primary"),
+        },
       ],
     },
     {
