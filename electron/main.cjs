@@ -8,12 +8,18 @@ const {
   Menu,
   nativeImage,
   nativeTheme,
+  net,
   Notification,
   powerMonitor,
   screen,
   shell,
   Tray,
 } = require("electron");
+const {
+  LATEST_RELEASE_API,
+  compareVersions,
+  releaseSummary,
+} = require("./github-release.cjs");
 const { latestRateLimits } = require("./quota-reader.cjs");
 const { HistoryStore } = require("./history-store.cjs");
 const {
@@ -24,6 +30,7 @@ const {
 
 let mainWindow;
 let historyWindow;
+let announcementWindow;
 let appServerClient;
 let historyStore;
 let tray;
@@ -31,6 +38,12 @@ let saveBoundsTimer;
 let preferences;
 let currentSnapshot = { available: false };
 let lastNotificationWindows = {};
+let macUpdateCheckPromise;
+let announcementRestoreBounds;
+
+const MEMBERSHIP_OFFER_URL = "https://pay.ldxp.cn/shop/EZ1G95SK";
+const ANNOUNCEMENT_WIDTH = 350;
+const ANNOUNCEMENT_HEIGHT = 118;
 
 const BASE_WIDTH = 440;
 const BASE_HEIGHT = 194;
@@ -66,6 +79,13 @@ function windowStatePath() {
 
 function preferencesPath() {
   return path.join(app.getPath("userData"), "preferences.json");
+}
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function loadPreferences() {
@@ -282,6 +302,100 @@ function positionWindow(window) {
   window.setPosition(x + width - windowWidth - 28, y + 28, false);
 }
 
+function positionAnnouncement() {
+  if (!mainWindow || mainWindow.isDestroyed() || !announcementWindow || announcementWindow.isDestroyed()) return;
+  let bounds = mainWindow.getBounds();
+  const display = screen.getDisplayMatching(bounds);
+  const workArea = display.workArea;
+  const requiredTop = ANNOUNCEMENT_HEIGHT + 8;
+  if (bounds.y - requiredTop < workArea.y + 8 && !announcementRestoreBounds) {
+    announcementRestoreBounds = bounds;
+    bounds = { ...bounds, y: workArea.y + requiredTop + 8 };
+    mainWindow.setBounds(bounds, false);
+  }
+  const x = Math.round(bounds.x + (bounds.width - ANNOUNCEMENT_WIDTH) / 2);
+  const clampedX = Math.min(
+    workArea.x + workArea.width - ANNOUNCEMENT_WIDTH - 8,
+    Math.max(workArea.x + 8, x),
+  );
+  announcementWindow.setBounds({
+    x: clampedX,
+    y: bounds.y - requiredTop,
+    width: ANNOUNCEMENT_WIDTH,
+    height: ANNOUNCEMENT_HEIGHT,
+  }, false);
+}
+
+function closeAnnouncement() {
+  if (announcementWindow && !announcementWindow.isDestroyed()) announcementWindow.close();
+}
+
+function createAnnouncementWindow(manual = false) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (announcementWindow && !announcementWindow.isDestroyed()) {
+    positionAnnouncement();
+    announcementWindow.show();
+    return;
+  }
+  const forceShow = manual || process.env.CODEX_WIDGET_ANNOUNCEMENT === "1";
+  const today = localDateKey();
+  if (!forceShow && preferences.lastAnnouncementDate === today) return;
+  preferences.lastAnnouncementDate = today;
+  savePreferences();
+
+  announcementWindow = new BrowserWindow({
+    width: ANNOUNCEMENT_WIDTH,
+    height: ANNOUNCEMENT_HEIGHT,
+    frame: false,
+    transparent: true,
+    backgroundColor: "#00000000",
+    roundedCorners: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    hasShadow: false,
+    show: false,
+    parent: mainWindow,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  announcementWindow.setAlwaysOnTop(true, "floating");
+  announcementWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
+  if (process.env.VITE_DEV_SERVER_URL) {
+    announcementWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}/?view=announcement`);
+  } else if (!app.isPackaged && !process.argv.includes("--screenshot")) {
+    announcementWindow.loadURL("http://127.0.0.1:5173/?view=announcement");
+  } else {
+    announcementWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"), { query: { view: "announcement" } });
+  }
+  positionAnnouncement();
+  announcementWindow.once("ready-to-show", async () => {
+    positionAnnouncement();
+    announcementWindow.show();
+    if (process.argv.includes("--screenshot") && process.env.CODEX_WIDGET_ANNOUNCEMENT_SCREENSHOT_PATH) {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      const image = await announcementWindow.webContents.capturePage();
+      const target = process.env.CODEX_WIDGET_ANNOUNCEMENT_SCREENSHOT_PATH;
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, image.toPNG());
+    }
+  });
+  announcementWindow.on("closed", () => {
+    announcementWindow = null;
+    if (announcementRestoreBounds && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setBounds(announcementRestoreBounds, false);
+    }
+    announcementRestoreBounds = null;
+  });
+}
+
 function createWindow() {
   const savedState = loadWindowState();
   const testSize = testWindowSize();
@@ -320,6 +434,8 @@ function createWindow() {
   }
   mainWindow.on("resize", scheduleSaveWindowState);
   mainWindow.on("move", scheduleSaveWindowState);
+  mainWindow.on("resize", positionAnnouncement);
+  mainWindow.on("move", positionAnnouncement);
 
   if (process.argv.includes("--screenshot")) {
     mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
@@ -334,6 +450,9 @@ function createWindow() {
   mainWindow.once("ready-to-show", async () => {
     mainWindow.show();
     scheduleSaveWindowState();
+    if (!process.argv.includes("--screenshot") || process.env.CODEX_WIDGET_ANNOUNCEMENT === "1") {
+      setTimeout(createAnnouncementWindow, process.argv.includes("--screenshot") ? 100 : 900);
+    }
     if (process.argv.includes("--screenshot")) {
       const screenshotDelay = Number(process.env.CODEX_WIDGET_SCREENSHOT_DELAY_MS) || 3500;
       await new Promise((resolve) => setTimeout(resolve, screenshotDelay));
@@ -412,6 +531,65 @@ function openHistoryWindow() {
   historyWindow.on("closed", () => { historyWindow = null; });
 }
 
+async function checkMacRelease(manual = false) {
+  if (macUpdateCheckPromise) return macUpdateCheckPromise;
+  macUpdateCheckPromise = (async () => {
+    const response = await net.fetch(LATEST_RELEASE_API, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": `Codex-Gauge/${app.getVersion()}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    });
+    if (!response.ok) throw new Error(`GitHub Release 请求失败（HTTP ${response.status}）`);
+    const release = releaseSummary(await response.json());
+    if (compareVersions(release.version, app.getVersion()) <= 0) {
+      if (manual) {
+        await dialog.showMessageBox(mainWindow, {
+          type: "info",
+          title: "检查更新",
+          message: "当前已是最新版本",
+          detail: `Codex Gauge ${app.getVersion()}`,
+        });
+      }
+      return;
+    }
+
+    const result = await dialog.showMessageBox(mainWindow, {
+      type: "info",
+      title: "发现新版本",
+      message: `Codex Gauge ${release.version} 可以下载`,
+      detail: `${release.notes}\n\n下载后请退出 Codex Gauge，将新版本拖入“应用程序”并选择覆盖。`,
+      buttons: ["下载更新", "稍后"],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true,
+    });
+    if (result.response === 0) {
+      await shell.openExternal(release.releaseUrl);
+      await dialog.showMessageBox(mainWindow, {
+        type: "info",
+        title: "安装更新",
+        message: "GitHub Release 已打开",
+        detail: "下载 macOS DMG，退出当前版本，然后将新的 Codex Gauge 拖入“应用程序”文件夹并选择覆盖。",
+        buttons: ["知道了"],
+      });
+    }
+  })().catch(async (error) => {
+    if (manual) {
+      await dialog.showMessageBox(mainWindow, {
+        type: "error",
+        title: "检查更新失败",
+        message: "暂时无法连接 GitHub Release",
+        detail: error.message,
+      });
+    }
+  }).finally(() => {
+    macUpdateCheckPromise = null;
+  });
+  return macUpdateCheckPromise;
+}
+
 async function checkForUpdates() {
   if (!app.isPackaged) {
     await dialog.showMessageBox(mainWindow, {
@@ -420,6 +598,10 @@ async function checkForUpdates() {
       message: "开发版不执行自动更新",
       detail: "正式打包安装后会自动检查 GitHub Releases。",
     });
+    return;
+  }
+  if (process.platform === "darwin") {
+    await checkMacRelease(true);
     return;
   }
   try {
@@ -437,6 +619,10 @@ async function checkForUpdates() {
 
 function setupAutoUpdater() {
   if (!app.isPackaged) return;
+  if (process.platform === "darwin") {
+    setTimeout(() => checkMacRelease(false), 10_000);
+    return;
+  }
   try {
     const { autoUpdater } = require("electron-updater");
     autoUpdater.autoDownload = true;
@@ -552,6 +738,7 @@ function openContextMenu() {
       click: (item) => updatePreference("trayEnabled", item.checked),
     },
     { label: "查看用量历史", click: openHistoryWindow },
+    { label: "会员服务公告", click: () => createAnnouncementWindow(true) },
     {
       label: "数据状态",
       submenu: [
@@ -614,6 +801,11 @@ app.whenReady().then(() => {
     historyWindow?.webContents.send("history:updated", []);
   });
   ipcMain.handle("widget:menu", () => openContextMenu());
+  ipcMain.handle("announcement:open-offer", async () => {
+    await shell.openExternal(MEMBERSHIP_OFFER_URL);
+    closeAnnouncement();
+  });
+  ipcMain.handle("announcement:close", () => closeAnnouncement());
   createWindow();
   updateTray();
   setupAutoUpdater();

@@ -1,6 +1,6 @@
 {
   "name": "codex-gauge",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A compact Windows and macOS desktop gauge for local Codex quota status.",
   "author": "Codex Gauge",
   "private": true,

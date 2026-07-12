@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld("codexQuota", {
   readHistory: () => ipcRenderer.invoke("history:read"),
   clearHistory: () => ipcRenderer.invoke("history:clear"),
   showMenu: () => ipcRenderer.invoke("widget:menu"),
+  openMembershipOffer: () => ipcRenderer.invoke("announcement:open-offer"),
+  closeAnnouncement: () => ipcRenderer.invoke("announcement:close"),
   onRefresh: (callback) => {
     const listener = () => callback();
     ipcRenderer.on("quota:refresh", listener);

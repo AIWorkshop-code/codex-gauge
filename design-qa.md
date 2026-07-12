@@ -1,4 +1,4 @@
-# Design QA — Usage History Redesign
+# Design QA
 
 - Source visual truth: `/Users/mac/.codex/generated_images/019f54e0-0a17-7ac3-8b0c-4404b1c0da62/exec-29973aac-179c-42b0-8bd6-50a91aa406e2.png`
 - Implementation screenshot: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/history-redesign-pass2.png`
@@ -43,5 +43,51 @@ Focused region comparison was not required because both 1440 × 1024 frames and 
 ## Follow-up polish
 
 - [P3] The source title is marginally heavier; the implementation keeps a slightly softer native system weight for better cross-platform rendering.
+
+## Membership announcement — 2026-07-12
+
+- Source visual truth: `/Users/mac/.codex/generated_images/019f54e0-0a17-7ac3-8b0c-4404b1c0da62/exec-e70de66a-ae92-4d32-9d0d-c192c05dacdd.png`
+- Implementation screenshot: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/announcement-implementation-pass2.png`
+- Combined comparison: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/announcement-qa-comparison.png`
+- Viewport: 350 × 118 logical pixels at 2× display scale
+- State: light theme, announcement visible above full widget
+
+### Full-view comparison evidence
+
+The implementation preserves the source hierarchy: quiet mint-white floating surface, membership title, one supporting sentence, once-daily disclosure, emerald CTA, dismiss control, and a centered visual pointer toward the quota widget. The production component is intentionally denser than the enlarged concept render so it remains usable beside the 220 × 97 desktop widget.
+
+### Required fidelity surfaces
+
+- Fonts and typography: native system typography matches the widget; title, body, disclosure, and CTA use distinct weights and remain legible at native scale.
+- Spacing and layout rhythm: text and CTA occupy separate grid columns, the close control has its own top-right zone, and the pointer is centered over the widget.
+- Colors and visual tokens: cool-white/mint surface, graphite copy, muted metadata, and emerald action match the existing light theme; dark equivalents are included.
+- Image quality and asset fidelity: the design contains no raster imagery. Bell, close, and pointer use the existing Phosphor icon library and render crisply at native resolution.
+- Copy and content: membership-service copy, CTA, and once-daily disclosure match the approved concept and the requested destination behavior.
+
+Focused region evidence is the native-resolution implementation capture, where all text, icon strokes, CTA bounds, close target, border, shadow, and pointer are readable.
+
+### Interaction checks
+
+- Close invokes the isolated announcement close channel.
+- CTA invokes a hard-coded external URL through the system browser and then closes the announcement.
+- The shown date is persisted as a local calendar date, limiting normal startup display to once per day.
+- The announcement follows widget move/resize events and temporarily makes room when the widget is too close to the top edge.
+
+### Comparison history
+
+#### Pass 1
+
+- [P1] Supporting copy was clipped behind the CTA and the close control visually collided with the action.
+- Fix: increased the announcement height, allowed a controlled two-line wrap, bottom-aligned the CTA, and separated the close focus zone.
+- Evidence: `artifacts/announcement-implementation.png`.
+
+#### Pass 2
+
+- No actionable P0, P1, or P2 differences remain. The two-line production copy is an intentional small-widget adaptation.
+- Evidence: `artifacts/announcement-implementation-pass2.png` and `artifacts/announcement-qa-comparison.png`.
+
+### Follow-up polish
+
+- [P3] The generated concept uses a wider one-line body; retaining that exact line length would make the announcement disproportionately wide next to the real widget.
 
 final result: passed

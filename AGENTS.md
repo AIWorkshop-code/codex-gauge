@@ -24,3 +24,12 @@ When implementing from a selected generated mock, treat that image as the source
 - Countdown copy must expose its time units instead of ambiguous colon-only digits: show days plus hours, hours plus minutes, minutes plus seconds, or seconds alone depending on the remaining duration.
 - The selected app icon direction is minimal and fresh: a pale mint squircle, one emerald quota ring, one sky-blue endpoint, and a quiet cool-gray center. Avoid dark inset panels, atom motifs, heavy shadows, or complex orbital detail.
 - Offer a persistent compact display mode that turns the widget into a square and renders only the 5H circular gauge. Keep the full 5H/7D/countdown layout available from the context menu.
+
+## Promotional visual direction
+
+- Promotional posters should feel editorial and premium rather than like generic SaaS feature grids: use one strong narrative headline, a large product-in-context hero, asymmetric spacing, and only a few supporting annotations.
+- Prefer restrained cool-to-warm atmospheric light (soft blue/violet with coral or peach) behind white space and translucent product surfaces. Avoid covering the whole poster with identical white cards or repeating green outline icons.
+- Show the real Codex Gauge widget faithfully in a believable desktop context. Let typography, product scale, depth, and lighting carry the composition; keep secondary copy concise.
+- Installation posters should center a believable Codex prompt interaction and a visually connected three-step path, not a dense form-like checklist.
+- On unsigned macOS builds, check the latest GitHub Release directly, show the new version and release notes immediately, and open the Release download page with clear drag-to-Applications replacement instructions. Keep `electron-updater` for Windows.
+- Show a lightweight membership-service announcement above the widget at most once per local calendar day. It must be dismissible, follow the widget, support both themes, and open the configured external offer in the system browser only after the user clicks the CTA. Keep a context-menu entry that lets users reopen the announcement manually without changing the daily automatic-display limit.
