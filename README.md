@@ -32,6 +32,29 @@
 
 如果找不到有效状态，界面会显示 `--`，不会生成估算额度。
 
+## 安装
+
+### Windows
+
+前往 GitHub Releases 下载最新的 `Codex-Gauge-Setup-*.exe`，运行安装程序即可完成安装。
+
+### macOS
+
+macOS 用户请勿直接使用 Windows 安装包，需要将项目拉取到本地，并按照以下环境要求自行编译安装：
+
+- Apple Silicon Mac（M 系列芯片）。
+- Node.js 22.12 或更高版本。
+- npm。
+
+```bash
+git clone https://github.com/AIWorkshop-code/codex-gauge.git
+cd codex-gauge
+npm install
+npm run build:mac
+```
+
+编译完成后，安装文件会生成在 `release/` 目录中。打开其中的 DMG 文件并完成安装。当前 macOS 版本未签名，首次打开时可能需要前往“系统设置 → 隐私与安全性”确认允许打开。
+
 ## 开发
 
 需要 Node.js 22.12 或更高版本。
