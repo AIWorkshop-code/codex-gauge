@@ -38,21 +38,43 @@ function normalizeRateLimits(payload, now = Date.now()) {
   };
 }
 
+function platformPackage() {
+  if (process.platform === "win32" && process.arch === "x64") {
+    return { packageName: "codex-win32-x64", target: "x86_64-pc-windows-msvc", executable: "codex.exe" };
+  }
+  if (process.platform === "darwin" && process.arch === "arm64") {
+    return { packageName: "codex-darwin-arm64", target: "aarch64-apple-darwin", executable: "codex" };
+  }
+  if (process.platform === "darwin" && process.arch === "x64") {
+    return { packageName: "codex-darwin-x64", target: "x86_64-apple-darwin", executable: "codex" };
+  }
+  return null;
+}
+
 function developmentBinary(projectRoot) {
+  const platform = platformPackage();
+  if (!platform) return null;
+  let packageRoot;
+  try {
+    const codexPackage = require.resolve("@openai/codex/package.json", { paths: [projectRoot] });
+    const codexPackageRoot = path.dirname(fs.realpathSync(codexPackage));
+    packageRoot = path.join(path.dirname(codexPackageRoot), platform.packageName);
+  } catch {
+    return null;
+  }
   return path.join(
-    projectRoot,
-    "node_modules",
-    "@openai",
-    "codex-win32-x64",
+    packageRoot,
     "vendor",
-    "x86_64-pc-windows-msvc",
+    platform.target,
     "bin",
-    "codex.exe",
+    platform.executable,
   );
 }
 
 function packagedBinary(resourcesPath) {
-  return path.join(resourcesPath, "codex-sidecar", "bin", "codex.exe");
+  const platform = platformPackage();
+  if (!platform) return null;
+  return path.join(resourcesPath, "codex-sidecar", "bin", platform.executable);
 }
 
 class AppServerClient extends EventEmitter {

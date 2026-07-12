@@ -1,6 +1,7 @@
 :root {
   font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   background: #f2f6f7;
+  color-scheme: light dark;
   font-synthesis: none;
 }
 
@@ -45,4 +46,322 @@ body,
 
 .drag-surface:active {
   cursor: grabbing;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  html,
+  body,
+  #root {
+    background: #171b1d;
+  }
+}
+
+.history-page {
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  padding: clamp(28px, 4vw, 58px);
+  color: #181d1b;
+  background: #f8faf9;
+  user-select: text;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid #e4e9e6;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  gap: 42px;
+}
+
+.history-header h1 {
+  margin: 0;
+  font-size: clamp(32px, 3vw, 48px);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+}
+
+.history-header p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #8a938f;
+  font-size: 15px;
+}
+
+.history-header button {
+  border: 0;
+  color: #4e5753;
+  font: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.clear-button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 3px;
+  color: #e05245 !important;
+  font-weight: 560 !important;
+}
+
+.history-header button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.clear-confirm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #707975;
+  font-size: 13px;
+}
+
+.clear-confirm button {
+  padding: 8px 12px;
+  border: 1px solid #dfe5e2;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.clear-confirm .danger {
+  border-color: #efc5c0;
+  color: #d9473a;
+  background: #fff8f7;
+}
+
+.history-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.72fr;
+  margin: 0;
+  padding: 42px 0 40px;
+}
+
+.history-summary article {
+  min-width: 0;
+  padding: 0 clamp(26px, 3vw, 58px);
+  border-right: 1px solid #dfe5e2;
+}
+
+.history-summary article:first-child { padding-left: 22px; }
+.history-summary article:last-child { border-right: 0; }
+
+.quota-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.metric-label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #414945;
+  font-size: 17px;
+  font-weight: 560;
+}
+
+.metric-label i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #36aa67;
+}
+
+.secondary .metric-label i { background: #51a6db; }
+
+.metric-main {
+  display: flex;
+  align-items: center;
+  gap: clamp(25px, 3vw, 48px);
+}
+
+.metric-main strong {
+  color: #39a960;
+  font-size: clamp(52px, 5vw, 76px);
+  font-weight: 510;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+}
+
+.secondary .metric-main strong { color: #4e9fd2; }
+
+.metric-main span {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 28px;
+  border-left: 1px solid #dfe5e2;
+  color: #9aa29e;
+  font-size: 13px;
+}
+
+.metric-main b {
+  color: #6f7773;
+  font-size: 15px;
+  font-weight: 480;
+}
+
+.sample-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.sample-summary span { color: #4d5551; font-size: 17px; font-weight: 560; }
+.sample-summary strong { font-size: 42px; font-weight: 540; line-height: 1; }
+.sample-summary small { color: #929a96; font-size: 14px; }
+
+.history-chart-card {
+  min-height: 520px;
+  padding: 34px 34px 16px;
+  border: 1px solid #dfe5e2;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 6px;
+}
+
+.chart-header > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.chart-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 630;
+}
+
+.chart-header > div:first-child span { color: #a0a7a4; font-size: 13px; }
+
+.chart-legend {
+  display: flex;
+  gap: 28px;
+  color: #626b67;
+  font-size: 14px;
+}
+
+.chart-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 3px;
+  margin: 0 9px 3px 0;
+  border-radius: 2px;
+}
+
+.primary-dot::before { background: #36aa67; }
+.secondary-dot::before { background: #51a6db; }
+
+.history-chart-card svg {
+  display: block;
+  width: 100%;
+  height: min(52vh, 510px);
+  min-height: 360px;
+}
+
+.grid-line {
+  stroke: #e6eae8;
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+}
+
+.axis-label {
+  fill: #8a938f;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.y-label { text-anchor: end; }
+.x-label { text-anchor: middle; }
+.x-label:first-of-type { text-anchor: start; }
+
+.history-chart-card polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.primary-line { stroke: #37a95f; }
+.secondary-line { stroke: #4fa2d5; }
+.primary-point { fill: #37a95f; stroke: #fff; stroke-width: 3; }
+.secondary-point { fill: #4fa2d5; stroke: #fff; stroke-width: 3; }
+
+.latest-time {
+  fill: #9aa19e;
+  font-family: inherit;
+  font-size: 12px;
+  text-anchor: end;
+}
+
+.history-empty {
+  display: grid;
+  min-height: 420px;
+  place-items: center;
+  color: #8e9793;
+}
+
+@media (max-width: 850px) {
+  .history-page { padding: 26px; }
+  .history-title-row { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .history-summary { grid-template-columns: 1fr 1fr; row-gap: 30px; }
+  .history-summary article:nth-child(2) { border-right: 0; }
+  .sample-summary { grid-column: 1 / -1; padding-top: 24px !important; border-top: 1px solid #dfe5e2; }
+  .metric-main { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .metric-main span { padding: 0; border: 0; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .history-page {
+    color: #edf3f0;
+    background: #151a18;
+  }
+
+  .history-header p,
+  .chart-header > div:first-child span,
+  .chart-legend,
+  .history-empty {
+    color: #9aa8a2;
+  }
+
+  .history-header,
+  .history-summary article,
+  .metric-main span,
+  .sample-summary {
+    border-color: #303835;
+  }
+
+  .metric-label,
+  .sample-summary span,
+  .metric-main b { color: #d2dad6; }
+  .sample-summary small { color: #89958f; }
+
+  .clear-confirm button,
+  .history-chart-card {
+    border-color: #303835;
+    background: #1c2220;
+  }
+
+  .grid-line { stroke: #333b38; }
+  .axis-label, .latest-time { fill: #89958f; }
+  .primary-point, .secondary-point { stroke: #1c2220; }
 }

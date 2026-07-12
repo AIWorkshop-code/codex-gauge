@@ -1,6 +1,6 @@
 # Codex Gauge
 
-一个通过官方 Codex App Server 实时读取额度的 Windows 桌面小组件，并在服务不可用时安全降级到本机会话数据。
+一个通过官方 Codex App Server 实时读取额度的 Windows / macOS 桌面小组件，并在服务不可用时安全降级到本机会话数据。
 
 ## 功能
 
@@ -15,6 +15,14 @@
 - 自动记住窗口尺寸和桌面位置。
 - 右键小组件可以切换置顶、选择小/中/大尺寸、重置位置或退出。
 - 额度更新完全自动；电脑唤醒或解锁时立即重新读取。
+- 额度不足时发送一次性系统通知，可在右键菜单关闭。
+- 动态无障碍描述会朗读两档额度和当前倒计时。
+- 右键菜单显示数据来源、最后更新时间和诊断信息。
+- 可以在 5H 与 7D 重置倒计时之间切换。
+- 可以控制登录时启动和托盘 / macOS 菜单栏模式。
+- 在独立详情窗口查看最近 30 天的本地用量趋势。
+- 正式安装包会通过 GitHub Releases 自动检查、下载并提示安装更新。
+- 支持自动、浅色和深色外观，并跟随系统主题实时切换。
 
 ## 隐私
 
@@ -35,4 +43,17 @@ npm test
 npm run build:desktop
 ```
 
-安装包输出到 `release/`。
+Windows 安装包输出到 `release/`。
+
+在 Apple Silicon Mac 上构建 DMG：
+
+```bash
+npm install
+npm run build:mac
+```
+
+macOS 安装包同样输出到 `release/`。当前 macOS 打包目标为 Apple Silicon（arm64），生成的应用未签名；首次打开时可能需要在“系统设置 → 隐私与安全性”中确认。
+
+## 自动更新
+
+自动更新使用 `AIWorkshop-code/codex-gauge` 的 GitHub Releases。Windows 构建会生成 NSIS 更新包；macOS 构建会同时生成 DMG、ZIP 和更新元数据。正式发布前仍应配置 Windows 代码签名和 macOS Developer ID 签名、公证，否则操作系统可能阻止自动安装。

@@ -2,7 +2,7 @@
 
 ## Completed checks
 
-- `npm test`: 6/6 App Server and fallback parser tests passed.
+- `npm test`: 8/8 App Server, fallback parser, and history-store tests passed.
 - `npm run build`: Vite production build passed.
 - Electron development capture passed.
 - Packaged Electron capture passed with reference data.
@@ -10,11 +10,17 @@
 - NSIS Windows installer build passed.
 - Design comparison passed in `design-qa.md`.
 
-## Release artifact
+## Release artifacts — 0.5.0
 
-- File: `release/Codex-Gauge-Setup-0.4.1.exe`
-- Size: 195,024,954 bytes
-- SHA-256: `A15BDED62C7A34374432130F21F19D06ADA7C8D6BC01BB6E7D894F32C08D7D67`
+- Windows NSIS: `release/Codex-Gauge-Setup-0.5.0.exe`
+  - Size: 195,401,387 bytes
+  - SHA-256: `9227666230CF4CEFA8EEB18D0DE49AA248CC14A1C65652167E2DCE887E8B6776`
+- macOS Apple Silicon DMG: `release/Codex-Gauge-0.5.0-macOS-arm64.dmg`
+  - Size: 232,537,922 bytes
+  - SHA-256: `7EE4C5A162D963BF687DD3457C66D284417825E51F1A7F9AB2275BF3B6DB1710`
+- macOS Apple Silicon ZIP: `release/Codex-Gauge-0.5.0-macOS-arm64.zip`
+  - Size: 224,851,623 bytes
+  - SHA-256: `2410A1FBE773CF7950A3AAC8F3CF295B5DEBBFC3E8E6F075AA51EE07F5392639`
 
 ## Runtime behavior verified
 
@@ -29,7 +35,7 @@
 - Converts used percentages to remaining percentages.
 - Displays the primary five-hour quota.
 - Displays the secondary seven-day quota.
-- Counts down to the primary reset timestamp.
+- Counts down to the selected primary or secondary reset timestamp with explicit day/hour/minute/second units.
 - Does not call an OpenAI API or start a Codex task.
 - Displays `--` when neither live App Server data nor a fresh fallback snapshot is available.
 

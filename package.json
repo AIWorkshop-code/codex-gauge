@@ -1,7 +1,7 @@
 {
   "name": "codex-gauge",
-  "version": "0.4.1",
-  "description": "A compact Windows desktop gauge for local Codex quota status.",
+  "version": "0.5.0",
+  "description": "A compact Windows and macOS desktop gauge for local Codex quota status.",
   "author": "Codex Gauge",
   "private": true,
   "type": "module",
@@ -14,12 +14,14 @@
     "dev:desktop": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
     "build": "vite build",
     "build:desktop": "npm run build && electron-builder --win nsis",
+    "build:mac": "npm run build && electron-builder --mac --arm64",
     "preview": "vite preview",
     "test": "node --test tests/*.test.cjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@vitejs/plugin-react": "5.0.4",
+    "electron-updater": "^6.8.9",
     "react": "19.2.0",
     "react-circular-progressbar": "^2.2.0",
     "react-dom": "19.2.0",
@@ -38,26 +40,57 @@
     "directories": {
       "output": "release"
     },
+    "publish": {
+      "provider": "github",
+      "owner": "AIWorkshop-code",
+      "repo": "codex-gauge",
+      "releaseType": "release"
+    },
     "files": [
       "dist/**/*",
       "electron/**/*",
       "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc",
-        "to": "codex-sidecar",
-        "filter": [
-          "**/*"
-        ]
-      }
     ],
     "win": {
       "target": [
         "nsis"
       ],
       "signAndEditExecutable": false,
-      "artifactName": "Codex-Gauge-Setup-${version}.${ext}"
+      "artifactName": "Codex-Gauge-Setup-${version}.${ext}",
+      "extraResources": [
+        {
+          "from": "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc",
+          "to": "codex-sidecar",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "artifactName": "Codex-Gauge-${version}-macOS-${arch}.${ext}",
+      "identity": null,
+      "extraResources": [
+        {
+          "from": "node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin",
+          "to": "codex-sidecar",
+          "filter": [
+            "**/*"
+          ]
+        },
+        {
+          "from": "node_modules/.pnpm/@openai+codex@0.144.1-darwin-arm64/node_modules/@openai/codex/vendor/aarch64-apple-darwin",
+          "to": "codex-sidecar",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": true,

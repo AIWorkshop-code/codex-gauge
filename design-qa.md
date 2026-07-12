@@ -1,49 +1,47 @@
-# Design QA
+# Design QA — Usage History Redesign
 
-- source visual truth path: `C:\Users\dxbc1\AppData\Local\Temp\codex-clipboard-22c111af-c3b6-472b-af63-3f1f4e8bd2e2.png`
-- implementation screenshot path: `artifacts/widget-implementation.png`
-- combined comparison evidence: `artifacts/design-comparison.png`
-- viewport: Electron window 440 x 194 logical pixels; capture 660 x 294 physical pixels at 150% Windows scale
-- state: light theme, 5H 68%, 7D 42%, reset countdown approximately 02:18
+- Source visual truth: `/Users/mac/.codex/generated_images/019f54e0-0a17-7ac3-8b0c-4404b1c0da62/exec-29973aac-179c-42b0-8bd6-50a91aa406e2.png`
+- Implementation screenshot: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/history-redesign-pass2.png`
+- Combined comparison: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/history-redesign-comparison-pass2.png`
+- Viewport: 1440 × 1024
+- State: light theme, populated preview history, clear action idle
 
 ## Full-view comparison evidence
 
-The combined comparison places the cropped source widget on the left and the Electron capture on the right at the same rendered size. The implementation preserves the selected horizontal composition, left circular gauge, right-aligned 7D value, thin progress bar, clock row, translucent light surface, corner radius, and compact desktop-widget density.
-
-## Focused region comparison evidence
-
-A separate focused crop was not needed because the complete component occupies 660 x 294 pixels in the comparison and all typography, strokes, spacing, icon geometry, and edges are clearly readable at original resolution.
+The implementation matches the selected editorial analytics direction: compact header, privacy line with lock icon, low-emphasis destructive action, three-part inline summary band, and chart-dominant lower region. Major region proportions, whitespace, chart frame, axis hierarchy, green/blue series, and current-point treatment align with the source.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: Segoe UI Variable/Segoe UI matches the Windows-native reference. Weight, scale, tracking, numeric alignment, and hierarchy are within the source treatment.
-- Spacing and layout rhythm: the two-column split, gauge scale, right-side alignment, inner padding, radius, and vertical rhythm match the source closely.
-- Colors and visual tokens: neutral acrylic white, soft gray tracks, charcoal type, and single green accent match the source. The exact wallpaper-dependent acrylic tint may vary at runtime.
-- Image quality and asset fidelity: there are no raster assets in the widget. The dynamic circular gauge uses the maintained `react-circular-progressbar` component and the clock uses Phosphor Icons; no placeholder art is present.
-- Copy and content: visible content matches the source: `5H`, primary percentage, `7D`, secondary percentage, clock icon, and countdown.
+- Fonts and typography: system UI font closely matches the source's neutral desktop typography. Title, quota numerals, labels, and metadata preserve the intended hierarchy and optical weight.
+- Spacing and layout rhythm: header divider, summary columns, vertical separators, chart inset, and outer margins match the source structure. Responsive fallback is included below 850 px.
+- Colors and visual tokens: off-white page, white chart surface, graphite text, Codex green, muted blue, light grid, and destructive red map cleanly to the source. Dark-mode equivalents remain supported.
+- Image quality and asset fidelity: the source contains no raster imagery. Lock and trash controls use the existing Phosphor icon library; the chart remains crisp code-native data visualization.
+- Copy and content: all product-specific Chinese labels are preserved. Dates intentionally use current real/preview data rather than copying the mock's stale April/May labels.
+
+Focused region comparison was not required because both 1440 × 1024 frames and all typography, controls, chart labels, separators, and endpoints were legible in the full-resolution combined comparison.
+
+## Interaction and browser checks
+
+- Clear-record action opens a confirmation state.
+- Cancel returns to the idle state without deleting history.
+- Browser console warnings/errors: none.
+- Dynamic chart and accessibility label render successfully.
 
 ## Comparison history
 
-### Iteration 1
+### Pass 1
 
-- Earlier findings: P2 typography and progress strokes were too large and heavy compared with the source; the clock icon was oversized; the surface was slightly too opaque.
-- Fixes made: reduced gauge stroke from 4.4 to 3.6, reduced progress height from 8 to 6 logical pixels, reduced clock from 32 to 28 logical pixels, tightened the type scale, and softened the acrylic surface opacity.
-- Post-fix evidence: `artifacts/design-comparison.png` shows the revised type sizes, line weights, and component proportions aligned with the source.
+- [P2] Repeated x-axis dates made the 30-day chart read like a one-day snapshot.
+- Fix: changed preview history to cover a full 30-day domain and regenerated seven distinct date ticks.
+- Evidence: `artifacts/history-redesign-pass1.png` compared with `artifacts/history-redesign-pass2.png`.
 
-## Findings
+### Pass 2
 
-No actionable P0, P1, or P2 visual mismatch remains.
+- No actionable P0, P1, or P2 differences remain.
+- Remaining data-value differences are expected because the implementation uses live/local history rather than hard-coded mock values.
 
 ## Follow-up polish
 
-- P3: Windows desktop composition and wallpaper affect the perceived acrylic tint and shadow; the implementation intentionally relies on the live desktop backdrop.
-- P3: the countdown advances while the capture is taken, so the screenshot may show 02:17 instead of the source's 02:18.
-
-## Implementation checklist
-
-- [x] Match widget geometry and density.
-- [x] Match typography hierarchy and content.
-- [x] Match gauge, progress, clock, colors, radius, and surface.
-- [x] Verify production rendering in Electron.
+- [P3] The source title is marginally heavier; the implementation keeps a slightly softer native system weight for better cross-platform rendering.
 
 final result: passed
