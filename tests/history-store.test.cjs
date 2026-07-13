@@ -22,3 +22,15 @@ test("prunes samples older than thirty days", () => {
   store.record(snapshot, 100_000 + MAX_AGE_MS + MIN_SAMPLE_INTERVAL_MS);
   assert.equal(store.read().length, 1);
 });
+
+test("records weekly-only snapshots without inventing a primary value", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "codex-gauge-history-"));
+  const store = new HistoryStore(path.join(directory, "history.json"));
+  const snapshot = { available: true, primaryRemaining: null, secondaryRemaining: 96, source: "app-server" };
+  assert.equal(store.record(snapshot, 100_000), true);
+  assert.deepEqual(store.read()[0], {
+    timestamp: 100_000,
+    secondaryRemaining: 96,
+    source: "app-server",
+  });
+});

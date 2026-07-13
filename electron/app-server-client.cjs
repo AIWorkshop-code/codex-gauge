@@ -18,20 +18,24 @@ function normalizeRateLimits(payload, now = Date.now()) {
     || payload;
   if (!container || container.limitId !== "codex") return null;
 
-  const primaryUsed = clampPercent(container.primary?.usedPercent);
-  const secondaryUsed = clampPercent(container.secondary?.usedPercent);
-  if (primaryUsed === null || secondaryUsed === null) return null;
+  const primaryWindowMinutes = Number(container.primary?.windowDurationMins) || null;
+  const weeklyWindow = container.secondary
+    || (primaryWindowMinutes >= 10080 ? container.primary : null);
+  const shortWindow = weeklyWindow === container.primary ? null : container.primary;
+  const weeklyUsed = clampPercent(weeklyWindow?.usedPercent);
+  const shortUsed = clampPercent(shortWindow?.usedPercent);
+  if (weeklyUsed === null) return null;
 
   return {
     available: true,
     source: "app-server",
     limitId: "codex",
-    primaryRemaining: Math.round((100 - primaryUsed) * 10) / 10,
-    secondaryRemaining: Math.round((100 - secondaryUsed) * 10) / 10,
-    primaryWindowMinutes: Number(container.primary?.windowDurationMins) || 300,
-    secondaryWindowMinutes: Number(container.secondary?.windowDurationMins) || 10080,
-    primaryResetsAt: Number(container.primary?.resetsAt) || null,
-    secondaryResetsAt: Number(container.secondary?.resetsAt) || null,
+    primaryRemaining: shortUsed === null ? null : Math.round((100 - shortUsed) * 10) / 10,
+    secondaryRemaining: Math.round((100 - weeklyUsed) * 10) / 10,
+    primaryWindowMinutes: shortWindow ? (Number(shortWindow.windowDurationMins) || 300) : null,
+    secondaryWindowMinutes: Number(weeklyWindow.windowDurationMins) || 10080,
+    primaryResetsAt: shortWindow ? (Number(shortWindow.resetsAt) || null) : null,
+    secondaryResetsAt: Number(weeklyWindow.resetsAt) || null,
     collectedAt: new Date(now).toISOString(),
     checkedAt: new Date(now).toISOString(),
     stale: false,

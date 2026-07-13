@@ -262,7 +262,7 @@ body,
 
 .history-summary {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.72fr;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.38fr);
   margin: 0;
   padding: 42px 0 40px;
 }
@@ -298,7 +298,7 @@ body,
   background: #36aa67;
 }
 
-.secondary .metric-label i { background: #51a6db; }
+.secondary .metric-label i { background: #36aa67; }
 
 .metric-main {
   display: flex;
@@ -314,7 +314,7 @@ body,
   line-height: 0.95;
 }
 
-.secondary .metric-main strong { color: #4e9fd2; }
+.secondary .metric-main strong { color: #39a960; }
 
 .metric-main span {
   display: flex;
@@ -387,8 +387,7 @@ body,
   border-radius: 2px;
 }
 
-.primary-dot::before { background: #36aa67; }
-.secondary-dot::before { background: #51a6db; }
+.secondary-dot::before { background: #36aa67; }
 
 .history-chart-card svg {
   display: block;
@@ -420,10 +419,8 @@ body,
   stroke-width: 3;
 }
 
-.primary-line { stroke: #37a95f; }
-.secondary-line { stroke: #4fa2d5; }
-.primary-point { fill: #37a95f; stroke: #fff; stroke-width: 3; }
-.secondary-point { fill: #4fa2d5; stroke: #fff; stroke-width: 3; }
+.secondary-line { stroke: #37a95f; }
+.secondary-point { fill: #37a95f; stroke: #fff; stroke-width: 3; }
 
 .latest-time {
   fill: #9aa19e;
@@ -442,9 +439,9 @@ body,
 @media (max-width: 850px) {
   .history-page { padding: 26px; }
   .history-title-row { align-items: flex-start; flex-direction: column; gap: 8px; }
-  .history-summary { grid-template-columns: 1fr 1fr; row-gap: 30px; }
-  .history-summary article:nth-child(2) { border-right: 0; }
-  .sample-summary { grid-column: 1 / -1; padding-top: 24px !important; border-top: 1px solid #dfe5e2; }
+  .history-summary { grid-template-columns: 1fr; row-gap: 30px; }
+  .history-summary article { border-right: 0; }
+  .sample-summary { padding-top: 24px !important; border-top: 1px solid #dfe5e2; }
   .metric-main { align-items: flex-start; flex-direction: column; gap: 16px; }
   .metric-main span { padding: 0; border: 0; }
 }
@@ -482,5 +479,5 @@ body,
 
   .grid-line { stroke: #333b38; }
   .axis-label, .latest-time { fill: #89958f; }
-  .primary-point, .secondary-point { stroke: #1c2220; }
+  .secondary-point { stroke: #1c2220; }
 }

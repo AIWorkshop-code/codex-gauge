@@ -91,3 +91,16 @@ Focused region evidence is the native-resolution implementation capture, where a
 - [P3] The generated concept uses a wider one-line body; retaining that exact line length would make the announcement disproportionately wide next to the real widget.
 
 final result: passed
+
+## Weekly-only widget — 2026-07-13
+
+- Light implementation: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/widget-7d-200x80.png`
+- Dark implementation: `/Users/mac/Documents/codex桌面插件/codex-gauge/artifacts/widget-7d-dark-200x80.png`
+- Viewport: 200 × 80 logical pixels at 2× display scale
+- State: reference 7D quota at 42%, four-day reset countdown
+
+The revised widget keeps the existing soft acrylic visual language while reducing the hierarchy to one weekly quota. The 7D badge, large remaining percentage, full-width progress track, and unit-bearing reset countdown remain legible at the default half-size footprint. Light and dark captures have consistent padding, corner radius, baseline alignment, progress geometry, and contrast. Browser checks at both the 400 × 160 base canvas and 200 × 80 default footprint reported no warnings or errors.
+
+The history view was also checked at 1440 × 1024. Its summary band and chart now expose only one green 7D series, with the sample count retained as secondary metadata. No 5H label remains in the widget, accessibility tree, tray/menu code, notifications, context menu, or history DOM.
+
+final result: passed

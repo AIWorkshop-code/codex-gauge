@@ -2,13 +2,28 @@
 
 ## Completed checks
 
-- `npm test`: 8/8 App Server, fallback parser, and history-store tests passed.
+- `npm test`: 14/14 App Server, weekly-only schema, fallback parser, GitHub Release, and history-store tests passed.
 - `npm run build`: Vite production build passed.
 - Electron development capture passed.
 - Packaged Electron capture passed with reference data.
 - Packaged Electron capture passed with live local Codex data.
 - NSIS Windows installer build passed.
 - Design comparison passed in `design-qa.md`.
+
+## Release artifacts — 0.5.4
+
+- Windows x64 NSIS: `release/Codex-Gauge-Setup-0.5.4.exe`
+  - Size: 199,080,782 bytes
+  - SHA-256: `5877650AAC00EC4FE9D2BA1B7B9D76FDDAE85FB5CC7C16FE22DEA4F143BC49AF`
+- macOS Apple Silicon DMG: `release/Codex-Gauge-0.5.4-macOS-arm64.dmg`
+  - Size: 238,275,893 bytes
+  - SHA-256: `64E2365B8237E2047C05FADC257F21EC85978517DFE4FE72D7E7DD9F7DE5174D`
+- macOS Apple Silicon ZIP: `release/Codex-Gauge-0.5.4-macOS-arm64.zip`
+  - Size: 229,796,674 bytes
+  - SHA-256: `CD38693D6229898298850776888C5FD9C5487795A656A55C2F87B1ADEC2A9F29`
+- Packaged macOS app contains an arm64 Codex sidecar and displayed the live weekly quota successfully.
+- Windows application and bundled Codex sidecar both report x86-64 architecture.
+- Packaged live evidence: `artifacts/widget-7d-live-packaged-0.5.4.png`.
 
 ## Release artifacts — 0.5.3
 
@@ -33,12 +48,22 @@
 - Selects the shared `limit_id: codex` quota and ignores model-specific limits such as `codex_bengalfox`.
 - Rejects fallback log snapshots older than two minutes.
 - Converts used percentages to remaining percentages.
-- Displays the primary five-hour quota.
-- Displays the secondary seven-day quota.
-- Supports a persisted square mode that displays only the five-hour quota.
-- Counts down to the selected primary or secondary reset timestamp with explicit day/hour/minute/second units.
+- Displays only the seven-day quota in user-facing surfaces; the primary window remains parser input only for source compatibility.
+- Counts down to the seven-day reset timestamp with explicit day/hour/minute/second units.
 - Does not call an OpenAI API or start a Codex task.
 - Displays `--` when neither live App Server data nor a fresh fallback snapshot is available.
+
+## Weekly-only interface verification — 2026-07-13
+
+- `node --check electron/main.cjs` passed.
+- `npm test` passed all 14 tests.
+- `npm run build` completed successfully with Vite 6.4.2.
+- Light and dark Electron captures passed at the default 200 × 80 logical-pixel footprint.
+- Browser checks passed at both 400 × 160 and 200 × 80 viewports with no console warnings or errors.
+- The widget accessibility tree contains only the 7-day remaining percentage and 7-day reset countdown.
+- The history view contains one 7D summary and one 7D trend series; no 5H label or series remains.
+- Live local verification read the official weekly-only shape (`primary.windowDurationMins: 10080`, `secondary: null`) and displayed the real remaining value instead of `--`.
+- Evidence: `artifacts/widget-7d-200x80.png` and `artifacts/widget-7d-dark-200x80.png`.
 
 ## 0.2.0 App Server verification
 

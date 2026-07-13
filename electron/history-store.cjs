@@ -22,12 +22,15 @@ class HistoryStore {
     if (!snapshot?.available) return false;
     const latest = this.entries.at(-1);
     if (latest && now - latest.timestamp < MIN_SAMPLE_INTERVAL_MS) return false;
-    this.entries.push({
+    const entry = {
       timestamp: now,
-      primaryRemaining: Number(snapshot.primaryRemaining),
       secondaryRemaining: Number(snapshot.secondaryRemaining),
       source: snapshot.source || "unknown",
-    });
+    };
+    if (snapshot.primaryRemaining !== null && snapshot.primaryRemaining !== undefined) {
+      entry.primaryRemaining = Number(snapshot.primaryRemaining);
+    }
+    this.entries.push(entry);
     this.entries = this.entries.filter((entry) => now - entry.timestamp <= MAX_AGE_MS);
     try {
       fs.writeFileSync(this.filePath, JSON.stringify(this.entries));

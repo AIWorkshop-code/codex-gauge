@@ -66,20 +66,23 @@ function parseRateLimitLine(line, sourcePath) {
   const rateLimits = event?.payload?.rate_limits;
   const primary = rateLimits?.primary;
   const secondary = rateLimits?.secondary;
-  if (!primary || !secondary) return null;
+  const primaryWindowMinutes = Number(primary?.window_minutes) || null;
+  const weekly = secondary || (primaryWindowMinutes >= 10080 ? primary : null);
+  const shortWindow = weekly === primary ? null : primary;
+  if (!weekly) return null;
 
-  const primaryUsed = clampPercent(primary.used_percent);
-  const secondaryUsed = clampPercent(secondary.used_percent);
-  if (primaryUsed === null || secondaryUsed === null) return null;
+  const primaryUsed = clampPercent(shortWindow?.used_percent);
+  const weeklyUsed = clampPercent(weekly.used_percent);
+  if (weeklyUsed === null) return null;
 
   return {
     limitId: rateLimits.limit_id || null,
-    primaryRemaining: Math.round((100 - primaryUsed) * 10) / 10,
-    secondaryRemaining: Math.round((100 - secondaryUsed) * 10) / 10,
-    primaryWindowMinutes: Number(primary.window_minutes) || 300,
-    secondaryWindowMinutes: Number(secondary.window_minutes) || 10080,
-    primaryResetsAt: Number(primary.resets_at) || null,
-    secondaryResetsAt: Number(secondary.resets_at) || null,
+    primaryRemaining: primaryUsed === null ? null : Math.round((100 - primaryUsed) * 10) / 10,
+    secondaryRemaining: Math.round((100 - weeklyUsed) * 10) / 10,
+    primaryWindowMinutes: shortWindow ? (Number(shortWindow.window_minutes) || 300) : null,
+    secondaryWindowMinutes: Number(weekly.window_minutes) || 10080,
+    primaryResetsAt: shortWindow ? (Number(shortWindow.resets_at) || null) : null,
+    secondaryResetsAt: Number(weekly.resets_at) || null,
     collectedAt: event.timestamp || new Date().toISOString(),
     sourcePath,
     limitName: rateLimits.limit_name || null,

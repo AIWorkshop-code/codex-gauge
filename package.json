@@ -1,6 +1,6 @@
 {
   "name": "codex-gauge",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A compact Windows and macOS desktop gauge for local Codex quota status.",
   "author": "Codex Gauge",
   "private": true,
@@ -13,7 +13,7 @@
     "dev": "vite",
     "dev:desktop": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
     "build": "vite build",
-    "build:desktop": "npm run build && electron-builder --win nsis",
+    "build:desktop": "npm run build && electron-builder --win nsis --x64",
     "build:mac": "npm run build && electron-builder --mac --arm64",
     "preview": "vite preview",
     "test": "node --test tests/*.test.cjs"

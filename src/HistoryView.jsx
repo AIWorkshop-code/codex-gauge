@@ -5,7 +5,6 @@ const CHART = { width: 1240, height: 480, left: 62, right: 28, top: 54, bottom: 
 const Y_TICKS = [100, 75, 50, 25, 0];
 const PREVIEW_HISTORY = Array.from({ length: 9 }, (_, index) => ({
   timestamp: Date.now() - (8 - index) * 3.75 * 24 * 60 * 60 * 1000,
-  primaryRemaining: 86 - index * 0.6,
   secondaryRemaining: 84 - index * 0.35,
   source: "preview",
 }));
@@ -66,7 +65,6 @@ export function HistoryView() {
   const recent = useMemo(() => entries.slice(-720), [entries]);
   const latest = recent.at(-1);
   const domain = useMemo(() => chartDomain(recent), [recent]);
-  const primaryPoint = latest ? chartPoint(latest, "primaryRemaining", domain) : null;
   const secondaryPoint = latest ? chartPoint(latest, "secondaryRemaining", domain) : null;
 
   const clear = async () => {
@@ -96,10 +94,6 @@ export function HistoryView() {
       </header>
 
       <section className="history-summary" aria-label="当前额度摘要">
-        <article className="quota-summary primary">
-          <span className="metric-label"><i />5H 剩余</span>
-          <div className="metric-main"><strong>{latest ? `${latest.primaryRemaining}%` : "--"}</strong><span><b>{consumptionRate(recent, "primaryRemaining")}</b>消耗速率</span></div>
-        </article>
         <article className="quota-summary secondary">
           <span className="metric-label"><i />7D 剩余</span>
           <div className="metric-main"><strong>{latest ? `${latest.secondaryRemaining}%` : "--"}</strong><span><b>{consumptionRate(recent, "secondaryRemaining")}</b>消耗速率</span></div>
@@ -114,10 +108,10 @@ export function HistoryView() {
       <section className="history-chart-card">
         <header className="chart-header">
           <div><h2>用量剩余百分比趋势</h2><span>最近 30 天</span></div>
-          <div className="chart-legend"><span className="primary-dot">5H 剩余</span><span className="secondary-dot">7D 剩余</span></div>
+          <div className="chart-legend"><span className="secondary-dot">7D 剩余</span></div>
         </header>
         {recent.length > 0 ? (
-          <svg viewBox={`0 0 ${CHART.width} ${CHART.height}`} role="img" aria-label="5小时和7天额度历史趋势">
+          <svg viewBox={`0 0 ${CHART.width} ${CHART.height}`} role="img" aria-label="7天额度历史趋势">
             {Y_TICKS.map((value) => {
               const y = CHART.top + ((100 - value) / 100) * (CHART.height - CHART.top - CHART.bottom);
               return <g key={value}><line className="grid-line" x1={CHART.left} x2={CHART.width - CHART.right} y1={y} y2={y} /><text className="axis-label y-label" x={CHART.left - 18} y={y + 5}>{value}%</text></g>;
@@ -126,9 +120,7 @@ export function HistoryView() {
               const x = CHART.left + ratio * (CHART.width - CHART.left - CHART.right);
               return <text className="axis-label x-label" key={ratio} x={x} y={CHART.height - 12}>{formatAxisDate(timestamp)}</text>;
             })}
-            <polyline className="primary-line" points={pointsFor(recent, "primaryRemaining", domain)} />
             <polyline className="secondary-line" points={pointsFor(recent, "secondaryRemaining", domain)} />
-            {primaryPoint && <circle className="primary-point" cx={primaryPoint.x} cy={primaryPoint.y} r="6" />}
             {secondaryPoint && <circle className="secondary-point" cx={secondaryPoint.x} cy={secondaryPoint.y} r="6" />}
             {latest && <text className="latest-time" x={CHART.width - CHART.right} y={CHART.top - 18}>{formatAxisDate(latest.timestamp, true)} 更新</text>}
           </svg>

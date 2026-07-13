@@ -32,6 +32,25 @@ test("parseRateLimitLine returns remaining percentages", () => {
   assert.equal(snapshot.secondaryWindowMinutes, 10080);
 });
 
+test("parseRateLimitLine accepts a weekly-only primary window", () => {
+  const line = JSON.stringify({
+    timestamp: "2026-07-13T10:00:00.000Z",
+    payload: {
+      rate_limits: {
+        limit_id: "codex",
+        primary: { used_percent: 4, window_minutes: 10080, resets_at: 2000600000 },
+        secondary: null,
+      },
+    },
+  });
+
+  const snapshot = parseRateLimitLine(line, "weekly-only.jsonl");
+  assert.equal(snapshot.primaryRemaining, null);
+  assert.equal(snapshot.secondaryRemaining, 96);
+  assert.equal(snapshot.primaryWindowMinutes, null);
+  assert.equal(snapshot.secondaryWindowMinutes, 10080);
+});
+
 test("parseRateLimitLine ignores unrelated events", () => {
   assert.equal(parseRateLimitLine('{"payload":{}}', "sample.jsonl"), null);
 });

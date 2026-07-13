@@ -45,18 +45,15 @@ const MEMBERSHIP_OFFER_URL = "https://pay.ldxp.cn/shop/EZ1G95SK";
 const ANNOUNCEMENT_WIDTH = 350;
 const ANNOUNCEMENT_HEIGHT = 118;
 
-const BASE_WIDTH = 440;
-const BASE_HEIGHT = 194;
+const BASE_WIDTH = 400;
+const BASE_HEIGHT = 160;
 const ASPECT_RATIO = BASE_WIDTH / BASE_HEIGHT;
 const DEFAULT_PREFERENCES = {
   themeSource: "system",
-  countdownWindow: "primary",
   notificationsEnabled: true,
-  primaryNotificationThreshold: 15,
   secondaryNotificationThreshold: 10,
   launchAtLogin: false,
   trayEnabled: true,
-  displayMode: "full",
 };
 
 const legacyUserDataPath = path.join(app.getPath("appData"), "codex-quota-widget");
@@ -98,9 +95,6 @@ function loadPreferences() {
   if (process.argv.includes("--screenshot") && ["system", "light", "dark"].includes(process.env.CODEX_WIDGET_THEME)) {
     saved.themeSource = process.env.CODEX_WIDGET_THEME;
   }
-  if (process.argv.includes("--screenshot") && ["full", "primary"].includes(process.env.CODEX_WIDGET_DISPLAY_MODE)) {
-    saved.displayMode = process.env.CODEX_WIDGET_DISPLAY_MODE;
-  }
   return { ...DEFAULT_PREFERENCES, ...saved };
 }
 
@@ -120,7 +114,6 @@ function updatePreference(key, value) {
     app.setLoginItemSettings({ openAtLogin: value });
   }
   if (key === "trayEnabled") updateTray();
-  if (key === "displayMode") applyDisplayMode(value);
   mainWindow?.webContents.send("preferences:updated", preferences);
 }
 
@@ -134,16 +127,7 @@ function loadWindowState() {
     const width = Number(state.width);
     const height = Number(state.height);
     if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
-    if (preferences?.displayMode === "primary") {
-      const side = Math.min(291, Math.max(78, Math.round(width)));
-      return {
-        width: side,
-        height: side,
-        x: Number.isFinite(Number(state.x)) ? Math.round(Number(state.x)) : undefined,
-        y: Number.isFinite(Number(state.y)) ? Math.round(Number(state.y)) : undefined,
-      };
-    }
-    const normalizedWidth = Math.min(660, Math.max(176, Math.round(width)));
+    const normalizedWidth = Math.min(600, Math.max(160, Math.round(width)));
     return {
       width: normalizedWidth,
       height: Math.round(normalizedWidth / ASPECT_RATIO),
@@ -174,28 +158,8 @@ function scheduleSaveWindowState() {
 function setPresetSize(width) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const bounds = mainWindow.getBounds();
-  if (preferences.displayMode === "primary") {
-    const side = Math.round(width / ASPECT_RATIO);
-    mainWindow.setBounds({ ...bounds, width: side, height: side }, true);
-  } else {
-    const height = Math.round(width / ASPECT_RATIO);
-    mainWindow.setBounds({ ...bounds, width, height }, true);
-  }
-  scheduleSaveWindowState();
-}
-
-function applyDisplayMode(mode) {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  const bounds = mainWindow.getBounds();
-  if (mode === "primary") {
-    const side = Math.min(291, Math.max(78, bounds.height));
-    mainWindow.setAspectRatio(1);
-    mainWindow.setBounds({ ...bounds, width: side, height: side }, true);
-  } else {
-    const height = Math.min(291, Math.max(78, bounds.height));
-    mainWindow.setAspectRatio(ASPECT_RATIO);
-    mainWindow.setBounds({ ...bounds, width: Math.round(height * ASPECT_RATIO), height }, true);
-  }
+  const height = Math.round(width / ASPECT_RATIO);
+  mainWindow.setBounds({ ...bounds, width, height }, true);
   scheduleSaveWindowState();
 }
 
@@ -220,6 +184,7 @@ async function readQuota() {
       primaryRemaining: 68,
       secondaryRemaining: 42,
       primaryResetsAt: Math.floor(Date.now() / 1000) + 2 * 3600 + 18 * 60,
+      secondaryResetsAt: Math.floor(Date.now() / 1000) + 4 * 24 * 3600 + 8 * 3600,
       stale: false,
     };
     acceptSnapshot(snapshot);
@@ -253,7 +218,7 @@ async function readQuota() {
 }
 
 function quotaWindowKey(snapshot) {
-  return `${snapshot.primaryResetsAt || "none"}:${snapshot.secondaryResetsAt || "none"}`;
+  return `${snapshot.secondaryResetsAt || "none"}`;
 }
 
 function showQuotaNotification(title, body) {
@@ -264,20 +229,15 @@ function showQuotaNotification(title, body) {
 function evaluateNotifications(snapshot, previousSnapshot) {
   if (!snapshot.available) return;
   const windowKey = quotaWindowKey(snapshot);
-  if (lastNotificationWindows.primary !== windowKey
-    && snapshot.primaryRemaining <= preferences.primaryNotificationThreshold) {
-    lastNotificationWindows.primary = windowKey;
-    showQuotaNotification("Codex 5H 额度不足", `剩余 ${snapshot.primaryRemaining}%，将在当前额度窗口内继续监控。`);
-  }
   if (lastNotificationWindows.secondary !== windowKey
     && snapshot.secondaryRemaining <= preferences.secondaryNotificationThreshold) {
     lastNotificationWindows.secondary = windowKey;
     showQuotaNotification("Codex 7D 额度不足", `剩余 ${snapshot.secondaryRemaining}%，请留意本周用量。`);
   }
   if (previousSnapshot?.available
-    && previousSnapshot.primaryResetsAt !== snapshot.primaryResetsAt
-    && snapshot.primaryRemaining > previousSnapshot.primaryRemaining + 20) {
-    showQuotaNotification("Codex 5H 额度已恢复", `当前剩余 ${snapshot.primaryRemaining}%。`);
+    && previousSnapshot.secondaryResetsAt !== snapshot.secondaryResetsAt
+    && snapshot.secondaryRemaining > previousSnapshot.secondaryRemaining + 20) {
+    showQuotaNotification("Codex 7D 额度已恢复", `当前剩余 ${snapshot.secondaryRemaining}%。`);
   }
 }
 
@@ -399,10 +359,9 @@ function createAnnouncementWindow(manual = false) {
 function createWindow() {
   const savedState = loadWindowState();
   const testSize = testWindowSize();
-  const primaryOnly = preferences.displayMode === "primary";
   mainWindow = new BrowserWindow({
-    width: testSize?.width || savedState?.width || (primaryOnly ? 97 : 220),
-    height: testSize?.height || savedState?.height || 97,
+    width: testSize?.width || savedState?.width || 200,
+    height: testSize?.height || savedState?.height || 80,
     x: savedState?.x,
     y: savedState?.y,
     frame: false,
@@ -428,7 +387,7 @@ function createWindow() {
 
   mainWindow.setAlwaysOnTop(true, "floating");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
-  mainWindow.setAspectRatio(preferences.displayMode === "primary" ? 1 : ASPECT_RATIO);
+  mainWindow.setAspectRatio(ASPECT_RATIO);
   if (!savedState || savedState.x === undefined || savedState.y === undefined) {
     positionWindow(mainWindow);
   }
@@ -492,12 +451,11 @@ function updateTray() {
     tray = new Tray(createTrayImage());
     tray.on("click", showMainWindow);
   }
-  const primary = currentSnapshot.available ? `${currentSnapshot.primaryRemaining}%` : "--";
-  if (process.platform === "darwin") tray.setTitle(` ${primary}`);
-  tray.setToolTip(`Codex Gauge · 5H ${primary}`);
+  const weekly = currentSnapshot.available ? `${currentSnapshot.secondaryRemaining}%` : "--";
+  if (process.platform === "darwin") tray.setTitle(` ${weekly}`);
+  tray.setToolTip(`Codex Gauge · 7D ${weekly}`);
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: `5H 剩余 ${primary}`, enabled: false },
-    { label: currentSnapshot.available ? `7D 剩余 ${currentSnapshot.secondaryRemaining}%` : "7D 剩余 --", enabled: false },
+    { label: `7D 剩余 ${weekly}`, enabled: false },
     { type: "separator" },
     { label: "显示组件", click: showMainWindow },
     { label: "查看用量历史", click: openHistoryWindow },
@@ -657,26 +615,9 @@ function openContextMenu() {
     {
       label: "大小",
       submenu: [
-        { label: "小（50%）", click: () => setPresetSize(220) },
-        { label: "中（75%）", click: () => setPresetSize(330) },
-        { label: "大（100%）", click: () => setPresetSize(440) },
-      ],
-    },
-    {
-      label: "显示内容",
-      submenu: [
-        {
-          label: "完整模式",
-          type: "radio",
-          checked: preferences.displayMode === "full",
-          click: () => updatePreference("displayMode", "full"),
-        },
-        {
-          label: "仅显示 5H",
-          type: "radio",
-          checked: preferences.displayMode === "primary",
-          click: () => updatePreference("displayMode", "primary"),
-        },
+        { label: "小（50%）", click: () => setPresetSize(200) },
+        { label: "中（75%）", click: () => setPresetSize(300) },
+        { label: "大（100%）", click: () => setPresetSize(400) },
       ],
     },
     {
@@ -699,23 +640,6 @@ function openContextMenu() {
           type: "radio",
           checked: nativeTheme.themeSource === "dark",
           click: () => updatePreference("themeSource", "dark"),
-        },
-      ],
-    },
-    {
-      label: "倒计时",
-      submenu: [
-        {
-          label: "5H 重置",
-          type: "radio",
-          checked: preferences.countdownWindow === "primary",
-          click: () => updatePreference("countdownWindow", "primary"),
-        },
-        {
-          label: "7D 重置",
-          type: "radio",
-          checked: preferences.countdownWindow === "secondary",
-          click: () => updatePreference("countdownWindow", "secondary"),
         },
       ],
     },
