@@ -2,6 +2,8 @@
 
 一个通过官方 Codex App Server 实时读取额度的 Windows / macOS 桌面小组件，并在服务不可用时安全降级到本机会话数据。
 
+换电脑继续开发时，请先阅读 [开发交接文档](docs/DEVELOPMENT_HANDOFF.md)。
+
 ## 功能
 
 - 显示 7 天额度剩余百分比。
